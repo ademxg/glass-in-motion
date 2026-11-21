@@ -1,2 +1,2 @@
-# -glass-in-motion
+# Glass in Motion.
 An open-source liquid glass UI library for modern websites, featuring interactive glass effects, smooth animations, and responsive components.
