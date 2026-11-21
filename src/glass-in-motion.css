@@ -1,0 +1,15 @@
+/* Glass in Motion — portable surfaces (WebGL renderer comes from the upstream engine). */
+.gim-root{position:relative;isolation:isolate;overflow:hidden}
+.gim-glass{position:relative;isolation:isolate;z-index:2;display:inline-flex;
+  align-items:center;justify-content:center;gap:.65rem;min-width:144px;
+  min-height:62px;padding:.9rem 1.4rem;border-radius:40px;
+  color:var(--gim-text,#fff);font:600 14px/1.25 system-ui,sans-serif;
+  border:1px solid transparent;background:transparent;cursor:pointer;
+  transition:transform .18s ease,color .18s ease;
+  -webkit-tap-highlight-color:transparent;text-shadow:0 1px 5px #0004}
+.gim-glass:hover{transform:translateY(-2px)}.gim-glass:active{transform:scale(.98)}
+.gim-glass:focus-visible{outline:3px solid #e8d7ff;outline-offset:4px}
+.gim-glass.gim-fallback{border-color:#ffffff70;background:rgba(255,255,255,var(--gim-opacity,.25));
+  box-shadow:inset 0 1px 1px #fff7,0 14px 36px #13102565;
+  backdrop-filter:blur(18px) saturate(150%);-webkit-backdrop-filter:blur(18px) saturate(150%)}
+@media(prefers-reduced-motion:reduce){.gim-glass{transition:none}}

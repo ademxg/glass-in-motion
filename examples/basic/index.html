@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#111428"><title>Glass in Motion — Reusable Component</title>
+<link rel="stylesheet" href="../../src/glass-in-motion.css">
+<style>
+*{box-sizing:border-box}body{margin:0;color:#faf9ff;background:#0b0e1a;font-family:Inter,system-ui,sans-serif}
+.page{min-height:100svh;display:grid;grid-template-columns:minmax(0,1fr) 320px;overflow:hidden}
+.stage{min-height:100svh;background:#192352;display:flex;align-items:center;justify-content:center}
+#wallpaper{position:absolute;inset:0;width:100%;height:100%;z-index:0}
+.scene-content{position:relative;z-index:1;width:min(95%,650px);padding:3rem 1rem;text-align:center}
+.kicker{font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:#fff9}
+h1{font-size:clamp(42px,7vw,82px);letter-spacing:-.067em;line-height:1.05;margin:.65rem 0 1rem}
+h1 span{font-weight:300}.intro{max-width:450px;margin:0 auto 2.8rem;color:#f8e8ffbf;line-height:1.7;font-size:14px}
+.buttons{display:flex;flex-wrap:wrap;gap:16px;justify-content:center}.gim-glass{width:152px;height:74px;font-size:14px}
+.status{text-align:center;color:#ede8ffb8;font-size:12px;margin-top:2rem;min-height:18px}
+.panel{background:radial-gradient(circle at 100% 0,#39335c55,transparent 55%),#111321;border-left:1px solid #ffffff1c;padding:35px 25px;display:flex;flex-direction:column;gap:16px}
+.panel h2{font-size:27px;letter-spacing:-.05em;margin:0}.panel p{font-size:12px;line-height:1.7;color:#bbc0d5;margin:0 0 9px}
+.panel label{font-size:11px;color:#eee9ff;display:flex;align-items:center;justify-content:space-between;margin:7px 0 0}
+.panel output{color:#d3bbff;font-variant-numeric:tabular-nums}
+.panel input[type=range]{width:100%;accent-color:#bdadff;cursor:pointer}
+select,button.control{background:#272840;color:#fff;border:1px solid #ffffff2e;border-radius:12px;padding:12px 14px;font:600 13px system-ui;cursor:pointer}
+code{font-size:12px;color:#d7caf8}.small{font-size:10px;color:#9aa4c0}
+@media(max-width:800px){.page{display:block}.stage{min-height:67svh}.scene-content{padding:4rem .8rem}.panel{border-left:0;border-top:1px solid #ffffff25;padding:25px}.gim-glass{width:134px;height:66px;min-width:0}}
+</style>
+</head><body>
+<div class="page"><main class="stage gim-root" id="glass-root">
+ <canvas id="wallpaper" aria-hidden="true"></canvas>
+ <div class="scene-content">
+ <div class="kicker">Open source · WebGL control</div>
+ <h1>Glass <span>in</span> Motion.</h1>
+ <p class="intro">Reusable liquid glass — same original renderer, now with a small JavaScript API.</p>
+ <div class="buttons">
+   <button class="gim-glass" id="first" type="button">✦ &nbsp; Glass</button>
+   <button class="gim-glass" id="second" type="button">◇ &nbsp; Crystal</button>
+   <button class="gim-glass" id="third" type="button">♡ &nbsp; Like</button>
+ </div>
+ <p class="status" id="status" role="status" aria-live="polite">Initializing glass…</p>
+ </div>
+</main>
+<aside class="panel"><div class="kicker">A small reusable module</div>
+<h2>Glass, made portable.</h2><p>The same WebGL engine, packaged with <code>mountGlass()</code>. Try changing the optical values.</p>
+<label for="preset">Preset</label>
+<select id="preset"><option value="original">Original</option><option value="crystal">Crystal</option><option value="soft">Soft</option><option value="prism">Prism</option></select>
+<label for="refract">Refraction <output id="rv">0.78</output></label><input id="refract" type="range" min="0" max="1.5" step="0.01" value="0.78">
+<label for="chrom">Chromatic aberration <output id="cv">0.045</output></label><input id="chrom" type="range" min="0" max="0.3" step="0.005" value="0.045">
+<label for="thick">Thickness <output id="tv">25</output></label><input id="thick" type="range" min="1" max="80" step="1" value="25">
+<button id="toggle" type="button" class="control">Pause wallpaper</button>
+<button id="reset" type="button" class="control">Reset settings</button>
+<p class="small">The WebGL renderer belongs to ybouane/liquidglass. Glass in Motion is an adapter and interface, not a new physics engine.</p>
+</aside></div>
+<script type="module" src="./main.js"></script>
+</body></html>
