@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#090b17">
+  <meta name="description" content="Glass in Motion — an interactive WebGL glass playground with accessible controls and reusable open-source CSS components.">
+  <title>Glass in Motion — Interactive Glass Playground</title>
+<style>
+:root{color-scheme:dark;--blur:7px;--opacity:.21;--distortion:.65;--text:#fbf9ff;--muted:#dfd9f1;--accent:#e9abff}
+*{box-sizing:border-box}
+html{min-height:100%;scroll-behavior:smooth}
+body{margin:0;min-height:100vh;overflow-x:hidden;background:#0c1028;color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+button,input{font:inherit}button{touch-action:manipulation}button:focus-visible,input:focus-visible{outline:3px solid #fff;outline-offset:4px}
+#scene{position:fixed;inset:0;z-index:-3;width:100%;height:100%;pointer-events:none;display:block}
+.fallback{position:fixed;inset:-20%;z-index:-4;background:radial-gradient(ellipse at 15% 15%,#6055cd 0,transparent 45%),radial-gradient(ellipse at 80% 40%,#ba579d 0,transparent 43%),radial-gradient(ellipse at 60% 90%,#268cba 0,transparent 40%),#0b1023;filter:blur(25px);animation:drift 15s ease-in-out infinite alternate}
+body.shader-ready .fallback{display:none}
+body.motion-off .fallback{animation-play-state:paused}
+.ambient-grid{position:fixed;z-index:-2;inset:0;pointer-events:none;opacity:.16;background:linear-gradient(#ffffff12 1px,transparent 1px),linear-gradient(90deg,#ffffff12 1px,transparent 1px);background-size:80px 80px;mask-image:linear-gradient(transparent 2%,black 62%,transparent)}
+.layout{width:min(calc(100% - 36px),900px);margin:0 auto;min-height:100vh;display:flex;align-items:center;flex-direction:column;padding:clamp(56px,10vh,108px) 0 34px;gap:32px}
+.hero{text-align:center;max-width:780px}.eyebrow{text-transform:uppercase;font-size:11px;font-weight:750;letter-spacing:.235em;color:#e8d9fa}.eyebrow span{color:#fff2ff;font-size:19px;vertical-align:-2px;margin-right:10px}
+h1{font-size:clamp(48px,9vw,90px);line-height:1.09;letter-spacing:-.075em;margin:17px 0 17px;font-weight:780;text-shadow:0 8px 44px #09051c70}h1 em{font-style:normal;font-weight:320}h1 b{color:var(--accent);font-weight:800}
+.hero p{font-size:clamp(14px,2.4vw,17px);line-height:1.7;margin:0 auto;color:#e9e2f3e8;max-width:610px}
+.glass{position:relative;isolation:isolate;border:1px solid #ffffff7a;overflow:hidden;background:linear-gradient(135deg,rgba(255,255,255,calc(var(--opacity) + .10)),rgba(255,255,255,calc(var(--opacity)*.6)) 52%,rgba(255,255,255,calc(var(--opacity)*.76)));box-shadow:inset 0 1px 0 #ffffffaa,inset 1px 0 0 #ffffff51,inset 0 -1px 0 #ffffff12,0 18px 60px #0b092a70;-webkit-backdrop-filter:blur(var(--blur)) saturate(155%);backdrop-filter:blur(var(--blur)) saturate(155%)}
+.glass::before{content:'';position:absolute;inset:0;border-radius:inherit;z-index:-1;pointer-events:none;background:radial-gradient(ellipse 300px 210px at var(--px,50%) var(--py,0%),#ffffff51,transparent 68%);transition:opacity .18s}
+.panel{width:min(100%,700px);border-radius:34px;padding:34px 36px 27px;transition:box-shadow .2s}
+.panel-header{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}.overline{font-size:10px;letter-spacing:.18em;font-weight:750;color:#e5dff5}h2{font-size:clamp(24px,3.5vw,31px);margin:8px 0 0;letter-spacing:-.045em}.live{display:inline-flex;align-items:center;gap:8px;font-size:10px;letter-spacing:.13em;font-weight:800;white-space:nowrap;color:#f7f7fff0}.live::before{content:'';width:8px;height:8px;border-radius:50%;background:#a2ffd1;box-shadow:0 0 14px #82ffb5}
+.showcase{display:flex;gap:22px;align-items:center;margin:32px 0 27px}.icon-block{border-radius:27px;width:112px;height:112px;flex:0 0 112px;display:grid;place-items:center}.icon-block span{font-size:72px;line-height:1;text-shadow:0 0 22px #fff8}h3{font-size:22px;letter-spacing:-.04em;margin:0 0 8px}.showcase p{margin:0;color:#f1eaffd5;font-size:13px;line-height:1.6}
+.actions{display:flex;flex-wrap:wrap;gap:12px}.glass-button{border-radius:17px;color:#fff;font-size:13px;font-weight:680;padding:13px 19px;cursor:pointer;transition:transform .16s,background-color .16s,box-shadow .16s;min-height:46px}.glass-button:hover{transform:translateY(-2px);background-color:#ffffff40;box-shadow:inset 0 1px #fffa,0 12px 23px #08092260}.glass-button:active{transform:scale(.97)}.glass-button.primary{background:linear-gradient(140deg,#fff8,#e3b7ff37)}.glass-button.primary span{padding-left:22px}
+.row-divider{height:1px;background:#ffffff35;margin:26px 0 21px}.controls{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px}.control label{display:flex;justify-content:space-between;gap:10px;font-size:11px;color:#f6f1ffe3;margin:0 0 14px;font-weight:600}.control output{font-size:11px;color:#fff;font-variant-numeric:tabular-nums}input[type=range]{width:100%;margin:0;display:block;cursor:pointer;accent-color:#f2d8ff}
+.presets{display:flex;align-items:center;flex-wrap:wrap;gap:10px;padding-top:23px}.presets-label{font-size:11px;font-weight:650;color:#eee5ffde;margin-right:6px}.preset{border:1px solid #ffffff4e;min-width:82px;padding:8px 11px;border-radius:12px;background:#ffffff22;color:#fff;cursor:pointer;font-size:11px;font-weight:700}.preset[aria-pressed=true]{background:#ffffff59;border-color:#fff;box-shadow:inset 0 1px #fff8}.preset:hover{background:#ffffff4d}
+.status{margin:21px 0 0;color:#f3e8ffc7;font-size:12px;min-height:18px}
+.dock{border-radius:24px;display:flex;align-items:center;gap:8px;padding:10px}.dock button{min-width:53px;min-height:50px;background:transparent;color:#fff;border:0;border-radius:16px;font-size:28px;cursor:pointer;transition:transform .18s,background .18s}.dock button:hover{transform:translateY(-2px);background:#ffffff35}.dock button.active{background:#ffffff4b;box-shadow:inset 0 1px #fff9,0 7px 14px #0c092b50}.dock button.favorited{color:#ffd0ec}
+footer{margin-top:auto;text-align:center;color:#f3ecffb8;font-size:10px;letter-spacing:.15em;font-weight:680;line-height:1.8}footer a{color:#fff;text-underline-offset:3px}
+body.pulsing .panel{animation:pulse .7s ease}body.motion-off .decorative-motion{animation-play-state:paused}
+@keyframes pulse{50%{box-shadow:inset 0 1px #fff,0 0 92px #f4bdffa2,0 18px 55px #0b092a66}}@keyframes drift{to{transform:translate(6%,-5%) scale(1.12)}}
+@media(max-width:620px){.layout{width:min(calc(100% - 28px),680px);gap:27px;padding-top:65px}.panel{padding:24px 22px 22px;border-radius:28px}.showcase{gap:15px;margin:28px 0 25px}.icon-block{width:82px;height:82px;flex-basis:82px;border-radius:22px}.icon-block span{font-size:51px}h3{font-size:17px}.showcase p{font-size:12px}.controls{grid-template-columns:1fr 1fr;gap:19px}.controls .control:last-child{grid-column:1 / -1}.glass-button{padding:12px 15px}.live{font-size:9px}.presets{gap:7px}.preset{min-width:77px}footer{font-size:9px;letter-spacing:.07em}}
+@media(max-width:360px){.panel-header{flex-wrap:wrap}.showcase{flex-direction:column;align-items:flex-start}.controls{grid-template-columns:1fr}.controls .control:last-child{grid-column:auto}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body data-palette="aurora">
+  <canvas id="scene" aria-hidden="true"></canvas>
+  <div class="fallback" aria-hidden="true"></div>
+  <div class="ambient-grid" aria-hidden="true"></div>
+  <main class="layout">
+    <header class="hero">
+      <div class="eyebrow"><span>✦</span>Open source / Interface experiment</div>
+      <h1>Glass <em>in</em> Motion<b>.</b></h1>
+      <p>Translucent surfaces. Living light. Real-time shader distortion. A tactile glass UI playground for the modern web.</p>
+    </header>
+    <section class="glass panel" id="main-panel" aria-labelledby="playground-title">
+      <div class="panel-header">
+        <div><div class="overline">EXPERIMENT NO. 002</div><h2 id="playground-title">The Playground</h2></div>
+        <div class="live">LIVE DEMO</div>
+      </div>
+      <div class="showcase">
+        <div class="glass icon-block" aria-hidden="true"><span>✳</span></div>
+        <div><h3>Glass, with depth.</h3><p>Refracted light bends around the surface. Adjust the glass and watch it respond.</p></div>
+      </div>
+      <div class="actions">
+        <button class="glass glass-button primary" type="button" id="pulse">Try interaction <span aria-hidden="true">↗</span></button>
+        <button class="glass glass-button" type="button" id="motion" aria-pressed="true">Motion: On</button>
+        <button class="glass glass-button" type="button" id="copy">Copy preset</button>
+      </div>
+      <div class="row-divider"></div>
+      <div class="controls">
+        <div class="control"><label for="blur">Glass blur <output id="blur-output" for="blur">7px</output></label><input id="blur" type="range" min="0" max="24" value="7"></div>
+        <div class="control"><label for="opacity">Opacity <output id="opacity-output" for="opacity">21%</output></label><input id="opacity" type="range" min="5" max="45" value="21"></div>
+        <div class="control"><label for="refraction">Refraction <output id="refraction-output" for="refraction">65%</output></label><input id="refraction" type="range" min="0" max="100" value="65"></div>
+      </div>
+      <div class="presets" role="group" aria-label="Color palette">
+        <span class="presets-label">Atmosphere</span>
+        <button class="preset" data-palette="aurora" aria-pressed="true" type="button">Aurora</button>
+        <button class="preset" data-palette="rose" aria-pressed="false" type="button">Rose</button>
+        <button class="preset" data-palette="ocean" aria-pressed="false" type="button">Ocean</button>
+      </div>
+      <p class="status" id="status" role="status" aria-live="polite">Shader glass is loading…</p>
+    </section>
+    <nav class="glass dock" aria-label="Playground shortcuts">
+      <button type="button" data-view="Home" class="active" aria-current="page" aria-label="Home"><span aria-hidden="true">⌂</span></button>
+      <button type="button" data-view="Explore" aria-label="Change atmosphere"><span aria-hidden="true">◇</span></button>
+      <button type="button" data-view="Favorites" aria-label="Favorite this playground" aria-pressed="false"><span aria-hidden="true">♡</span></button>
+      <button type="button" data-view="Settings" aria-label="Focus glass settings"><span aria-hidden="true">⚙</span></button>
+    </nav>
+    <footer>GLASS IN MOTION <span aria-hidden="true"> · </span> OPEN SOURCE <span aria-hidden="true"> · </span> <a href="https://github.com/ademxg/glass-in-motion" target="_blank" rel="noopener noreferrer">GITHUB</a> <span aria-hidden="true"> · </span> MIT LICENSE</footer>
+  </main>
+<script>
+(() => {
+'use strict';
+const $ = (s) => document.querySelector(s);
+const panel = $('#main-panel');
+const status = $('#status');
+const motionBtn = $('#motion');
+const canvas = $('#scene');
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+const state = { motion: !reduceMotion.matches, palette: 'aurora', blur: 7, opacity: 21, refraction: 65, favorite: false };
+const palettes = {
+  aurora: [[.43,.32,.93],[.82,.31,.65],[.15,.66,.79]],
+  rose: [[.73,.27,.72],[.98,.47,.42],[.47,.33,.91]],
+  ocean: [[.09,.50,.83],[.17,.83,.69],[.30,.32,.80]]
+};
+const clamp=(v,min,max)=>Math.max(min,Math.min(max,v));
+let renderer=null;
+function message(text){status.textContent=text;}
+function syncMotion(){motionBtn.setAttribute('aria-pressed',String(state.motion));motionBtn.textContent=`Motion: ${state.motion?'On':'Off'}`;document.body.classList.toggle('motion-off',!state.motion);renderer?.wake();}
+function setPalette(name){if(!palettes[name])return;state.palette=name;document.body.dataset.palette=name;document.querySelectorAll('.preset').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.palette===name)));renderer?.wake();message(`${name[0].toUpperCase()+name.slice(1)} atmosphere selected.`);}
+function bindSlider(id,property,format,apply){const el=$('#'+id),out=$('#'+id+'-output');el.addEventListener('input',()=>{const v=Number(el.value);state[property]=v;out.value=format(v);apply(v);renderer?.wake();});apply(state[property]);}
+bindSlider('blur','blur',v=>`${v}px`,v=>document.documentElement.style.setProperty('--blur',`${v}px`));
+bindSlider('opacity','opacity',v=>`${v}%`,v=>document.documentElement.style.setProperty('--opacity',String(v/100)));
+bindSlider('refraction','refraction',v=>`${v}%`,v=>document.documentElement.style.setProperty('--distortion',String(v/100)));
+document.querySelectorAll('.glass').forEach(el=>{el.addEventListener('pointermove',e=>{if(e.pointerType==='touch')return;const r=el.getBoundingClientRect();el.style.setProperty('--px',`${((e.clientX-r.left)/r.width)*100}%`);el.style.setProperty('--py',`${((e.clientY-r.top)/r.height)*100}%`);});el.addEventListener('pointerleave',()=>{el.style.removeProperty('--px');el.style.removeProperty('--py');});});
+$('#pulse').addEventListener('click',()=>{document.body.classList.remove('pulsing');void panel.offsetWidth;document.body.classList.add('pulsing');message('Glass pulse activated.');});
+panel.addEventListener('animationend',()=>document.body.classList.remove('pulsing'));
+motionBtn.addEventListener('click',()=>{state.motion=!state.motion;syncMotion();message(state.motion?'Ambient motion resumed.':'Ambient motion paused.');});
+document.querySelectorAll('.preset').forEach(b=>b.addEventListener('click',()=>setPalette(b.dataset.palette)));
+$('#copy').addEventListener('click',async()=>{const preset=`backdrop-filter: blur(${state.blur}px) saturate(155%);\nbackground: rgba(255, 255, 255, ${(state.opacity/100).toFixed(2)});\n/* Shader refraction strength: ${(state.refraction/100).toFixed(2)} (demo-specific) */`;try{await navigator.clipboard.writeText(preset);message('Glass preset copied to clipboard.');}catch{message('Clipboard unavailable. Use HTTPS or copy values manually.');}});
+const dockButtons=[...document.querySelectorAll('.dock button')];
+dockButtons.forEach(b=>b.addEventListener('click',()=>{const view=b.dataset.view;dockButtons.forEach(x=>{x.classList.remove('active');x.removeAttribute('aria-current');});b.classList.add('active');b.setAttribute('aria-current','page');if(view==='Home'){window.scrollTo({top:0,behavior:state.motion?'smooth':'instant'});message('Welcome home.');}if(view==='Explore'){const options=Object.keys(palettes);setPalette(options[(options.indexOf(state.palette)+1)%options.length]);}if(view==='Favorites'){state.favorite=!state.favorite;b.setAttribute('aria-pressed',String(state.favorite));b.classList.toggle('favorited',state.favorite);b.querySelector('span').textContent=state.favorite?'♥':'♡';message(state.favorite?'Added to favorites for this session.':'Removed from favorites.');}if(view==='Settings'){$('#blur').focus();message('Glass controls ready to adjust.');}}));
+reduceMotion.addEventListener('change',e=>{if(e.matches){state.motion=false;syncMotion();}});
+
+// A standalone WebGL2 scene shader that bends the procedural background's sample
+// coordinates inside the central rounded rectangle. This is *stylized* refraction,
+// not a physically exact simulation of glass or lens optics.
+function createRenderer(){const gl=canvas.getContext('webgl2',{alpha:false,antialias:false,powerPreference:'low-power'});if(!gl)return null;
+const vert=`#version 300 es
+in vec2 a_position;
+void main(){gl_Position=vec4(a_position,0.0,1.0);}`;
+const frag=`#version 300 es
+precision highp float;
+out vec4 fragColor;
+uniform vec2 u_resolution;
+uniform vec2 u_view;
+uniform vec4 u_panel;
+uniform float u_radius;
+uniform float u_time;
+uniform float u_strength;
+uniform vec3 u_a,u_b,u_c;
+float sdf(vec2 p,vec4 r,float rad){vec2 center=r.xy+r.zw*.5;vec2 q=abs(p-center)-(r.zw*.5-vec2(rad));return length(max(q,0.0))+min(max(q.x,q.y),0.0)-rad;}
+vec3 background(vec2 p){vec2 s=vec2(max(u_view.x,320.0),max(u_view.y,400.0));vec2 uv=p/s;
+ vec2 ca=vec2(.08+.085*sin(u_time*.25),.06+.08*cos(u_time*.22));
+ vec2 cb=vec2(.85+.10*cos(u_time*.20),.34+.10*sin(u_time*.18));
+ vec2 cc=vec2(.45+.11*sin(u_time*.18),.94+.09*cos(u_time*.25));
+ float a=exp(-dot((uv-ca)*vec2(1.25,1.06),(uv-ca)*vec2(1.25,1.06))*3.7);
+ float b=exp(-dot((uv-cb)*vec2(1.15,1.08),(uv-cb)*vec2(1.15,1.08))*3.4);
+ float c=exp(-dot((uv-cc)*vec2(1.10,1.10),(uv-cc)*vec2(1.10,1.10))*3.6);
+ vec3 col=vec3(.029,.034,.085) + u_a*a*.80 + u_b*b*.75 + u_c*c*.68;
+ return min(col,vec3(.94));}
+void main(){vec2 p=vec2(gl_FragCoord.x/u_resolution.x*u_view.x, (1.0-gl_FragCoord.y/u_resolution.y)*u_view.y);
+ float d=sdf(p,u_panel,u_radius);vec3 col=background(p);
+ if(d<1.5){float edge=exp(-max(-d,0.0)/19.0);
+ vec2 delta=vec2(sdf(p+vec2(1.0,0.0),u_panel,u_radius)-sdf(p-vec2(1.0,0.0),u_panel,u_radius),sdf(p+vec2(0.0,1.0),u_panel,u_radius)-sdf(p-vec2(0.0,1.0),u_panel,u_radius));
+ vec2 n=normalize(delta+vec2(.00001));float strength=u_strength;
+ vec2 wobble=vec2(sin(p.y*.026+u_time*.52),cos(p.x*.029-u_time*.45))*.95*strength;
+ vec2 offset=n*edge*29.0*strength+wobble;
+ vec3 r=background(p+offset+n*3.5*strength*edge);
+ vec3 g=background(p+offset);
+ vec3 b=background(p+offset-n*3.5*strength*edge);
+ vec3 refracted=vec3(r.r,g.g,b.b);
+ float glow=exp(-abs(d)/2.4)*.16;
+ float upper=clamp((u_panel.y+u_panel.w*.30-p.y)/max(u_panel.w*.30,1.0),0.0,1.0);
+ refracted+=vec3(.12,.10,.16)*glow+vec3(.08,.055,.10)*upper*.33;
+ col=mix(col,refracted,1.0-smoothstep(-.5,1.5,d));
+ }
+ float vignette=1.0-.19*pow(length((p/u_view)-.5)*1.1,1.8);
+ col*=vignette;fragColor=vec4(pow(max(col,0.0),vec3(.94)),1.0);
+}`;
+function compile(type,source){const shader=gl.createShader(type);gl.shaderSource(shader,source);gl.compileShader(shader);if(!gl.getShaderParameter(shader,gl.COMPILE_STATUS)){console.warn(gl.getShaderInfoLog(shader));gl.deleteShader(shader);return null;}return shader;}
+const vs=compile(gl.VERTEX_SHADER,vert),fs=compile(gl.FRAGMENT_SHADER,frag);if(!vs||!fs)return null;
+const program=gl.createProgram();gl.attachShader(program,vs);gl.attachShader(program,fs);gl.linkProgram(program);if(!gl.getProgramParameter(program,gl.LINK_STATUS)){console.warn(gl.getProgramInfoLog(program));return null;}gl.useProgram(program);
+const buffer=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,buffer);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,-1,1,1,-1,1,1]),gl.STATIC_DRAW);const loc=gl.getAttribLocation(program,'a_position');gl.enableVertexAttribArray(loc);gl.vertexAttribPointer(loc,2,gl.FLOAT,false,0,0);
+const uniform=(s)=>gl.getUniformLocation(program,s);
+const uniforms={res:uniform('u_resolution'),view:uniform('u_view'),panel:uniform('u_panel'),radius:uniform('u_radius'),time:uniform('u_time'),strength:uniform('u_strength'),a:uniform('u_a'),b:uniform('u_b'),c:uniform('u_c')};
+let frame=0,then=performance.now(),elapsed=0,needsResize=true;
+const wake=()=>{needsResize=true;if(!frame&&!document.hidden){frame=requestAnimationFrame(draw);}};
+function draw(now){frame=0;if(document.hidden)return;const dt=Math.min((now-then)/1000,.1);then=now;if(state.motion)elapsed+=dt;
+const dpr=Math.min(window.devicePixelRatio||1,1.5),w=Math.max(1,Math.round(window.innerWidth*dpr)),h=Math.max(1,Math.round(window.innerHeight*dpr));if(needsResize||canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;gl.viewport(0,0,w,h);needsResize=false;}
+const r=panel.getBoundingClientRect();const colors=palettes[state.palette];
+gl.useProgram(program);gl.uniform2f(uniforms.res,w,h);gl.uniform2f(uniforms.view,window.innerWidth,window.innerHeight);gl.uniform4f(uniforms.panel,r.left,r.top,r.width,r.height);gl.uniform1f(uniforms.radius,window.innerWidth<620?28:34);gl.uniform1f(uniforms.time,elapsed);gl.uniform1f(uniforms.strength,state.refraction/100);gl.uniform3fv(uniforms.a,new Float32Array(colors[0]));gl.uniform3fv(uniforms.b,new Float32Array(colors[1]));gl.uniform3fv(uniforms.c,new Float32Array(colors[2]));gl.drawArrays(gl.TRIANGLES,0,6);
+if(state.motion)frame=requestAnimationFrame(draw);
+}
+window.addEventListener('resize',wake,{passive:true});window.addEventListener('scroll',wake,{passive:true});document.addEventListener('visibilitychange',()=>{then=performance.now();if(!document.hidden)wake();});canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();if(frame)cancelAnimationFrame(frame);frame=0;document.body.classList.remove('shader-ready');message('Graphics context paused; using CSS glass.');});wake();return {wake};
+}
+try{renderer=createRenderer();if(renderer){document.body.classList.add('shader-ready');message('WebGL glass active. Try adjusting refraction.');}else{message('CSS glass fallback active. WebGL2 unavailable.');}}catch(error){console.warn('WebGL glass fallback',error);message('CSS glass fallback active.');}
+syncMotion();
+})();
+</script>
+</body>
+</html>
