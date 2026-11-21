@@ -2,11 +2,11 @@
 
 ## Glass in Motion — Showcase
 
-![Glass in Motion Showcase](assets/media/glass-showcase.png)
+![Glass in Motion Showcase](assets/glass-showcase.png)
 
 ### Liquid Glass in Action
 
-![Animated Glass Buttons](assets/media/glass-buttons.gif)
+![Animated Glass Buttons](assets/glass-buttons.gif)
 
 [Watch the Full Video](assets/media/glass-buttons-video.mp4)
 
