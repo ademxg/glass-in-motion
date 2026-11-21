@@ -1,5 +1,15 @@
 # Glass in Motion
 
+## Glass in Motion — Showcase
+
+![Glass in Motion Showcase](assets/media/glass-showcase.png)
+
+### Liquid Glass in Action
+
+![Animated Glass Buttons](assets/media/glass-buttons.gif)
+
+[Watch the Full Video](assets/media/glass-buttons-video.mp4)
+
 **A live, interactive control studio for real WebGL liquid-glass effects.**
 
 [**Try the live demo**](https://ademxg.github.io/glass-in-motion/) · [**View the source**](https://github.com/ademxg/glass-in-motion)
